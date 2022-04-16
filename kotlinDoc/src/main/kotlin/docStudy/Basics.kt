@@ -1,0 +1,4 @@
+package docStudy
+
+class Basics {
+}
