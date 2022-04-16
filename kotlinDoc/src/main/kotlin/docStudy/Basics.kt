@@ -1,4 +1,0 @@
-package docStudy
-
-class Basics {
-}
