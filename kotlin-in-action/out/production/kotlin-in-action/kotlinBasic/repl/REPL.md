@@ -66,4 +66,57 @@ class Person {
 }
 ```
 
+### enum과 when
+- 코틀린의 when은 자바의 switch를 대신할 수 있으면서 더 강력하다. 그리고 앞으로 더 자주 사용할 요소이다.
+- when에 대해 설명하는 과정에서 enum을 선언하는 방법과 smart cast에 대해서도 살펴본다.
+
+### enum 클래스 정의
+```kotlin
+package kotlinBasic
+
+enum class Color {
+    RED, ORANGE, YELLOW, GREEN, BLUE, INDIGO, VIOLET
+}
+```
+- enum은 자바 선언보다 코틀린 선언에 더 많은 키워드를 써야 하는 흔치 않은 예이다.
+- 코틀린에서는 enum class, 자바에서는 enum을 사용한다.
+- 코틀린에서 enum은 soft keyword라고 부른다.
+- 자바와 마찬가지로 단순 값만 열거하지 않고 enum 클래스 안에 프로퍼티나 메서드를 정의할 수 있다.
+
+프로퍼티와 메서드가 있는 enum 클래스
+```kotlin
+package kotlinBasic
+
+enum class Color(val r: Int, val g: Int, val b: Int) {
+
+    RED(255, 0, 0), ORANGE(255, 165, 0),
+    YELLOW(225, 225, 0), GREEN(0, 255, 0),
+    BLUE(0, 0, 255), INDIGO(75, 0, 130),
+    VIOLET(238, 130, 238);
+
+    fun rgb() = (r * 256 + g) * 256 + b
+}
+```
+- enum에서도 생성자와 프로퍼티를 선언한다.
+- enum 클래스 안에 메서드를 정의해야 하는 경우 반드시 enum 상수 목록과 메서드 정의 사이에 세미콜론을 넣어야 한다.
+
+### when으로 enum 클래스 다루기
+- Java의 switch문에 해당하는 Kotlin의 구성 요소는 when이다.
+- if와 마찬가지로 when도 문이 아닌 식이다. 때문에 식이 본문인 함수에 when을 바로 사용 가능하다.
+```kotlin
+fun getMnemonic(color: Color) = when (color) {
+    Color.RED -> "빨강"
+    Color.BLUE -> "파랑"
+    Color.GREEN -> "초록"
+    Color.INDIGO -> 3
+    Color.ORANGE -> 2
+    Color.VIOLET -> "Violet"
+    Color.YELLOW -> 1
+}
+```
+- color로 전달된 값과 같은 분기를 찾는다.
+- 각 분기 끝에 break를 넣지 않아도 된다.
+- 분기 안에서 여러 값을 매치 패턴으로 사용 가능한데 그럴 경우 값 사이에 ,를 넣어 분리한다.
+
+
 
