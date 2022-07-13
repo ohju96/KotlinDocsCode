@@ -216,3 +216,24 @@ fun eval(e: Expr): Int =
 - if와 마찬가지로 타입을 검사하며 스마트 캐스트가 이루어진다.
 
 ### if와 when의 분기에서 블록 사용 
+```kotlin
+fun evalWithLogging(e: Expr) : Int =
+    when (e) {
+
+        is Num -> {
+            println("num: ${e.value}")
+            e.value
+        }
+
+        is Sum -> {
+            val left = evalWithLogging(e.left)
+            val right = evalWithLogging(e.right)
+            println("sum: $left + $right")
+            left + right
+        }
+
+        else -> throw java.lang.IllegalArgumentException("Unknown expression")
+    }
+```
+- 블록의 마지막 식이 블록의 결과는 블록이 값을 만들어야 하는 경우 항상 성립
+- 식이 본문인 함수는 블록을 본문으로 가질 수 없고, 블록이 본문인 함수는 내부에 return문이 반드시 있어야 한다. 
