@@ -119,7 +119,7 @@ fun getMnemonic(color: Color) = when (color) {
 - 분기 안에서 여러 값을 매치 패턴으로 사용 가능한데 그럴 경우 값 사이에 ,를 넣어 분리한다.
 - `Color.YELLOW, Color.RED -> 1`
 - 조금 더 코드를 짧게 하기 위해
-- `import kotlinBasic.Color.*` 스타 임포트를 넣어준다. 짧은 이름을 사용하기 위해 enum 상수를 모두 임포트 한 것이다.
+- `import kotlinBasic.`when`.Color.*` 스타 임포트를 넣어준다. 짧은 이름을 사용하기 위해 enum 상수를 모두 임포트 한 것이다.
 ```kotlin
 fun getMnemonic(color: Color) = when (color) {
     BLUE -> "파랑"
@@ -131,6 +131,109 @@ fun getMnemonic(color: Color) = when (color) {
 }
 ```
 - 확실히 짧아진 코드를 볼 수 있다. 임포트한 enum 상수를 이름만으로 사용한다.
+---
+`22.07.13`
 
+### when과 임의의 객체 함께 사용
+- 분기 조건에 상수만 사용할 수 있는 자바와 달리 코틀린은 임의의 객체를 허용하기 때문에 자바의 switch보다 훨씬 강력하다.
+```kotlin
+fun mix(c1: Color, c2: Color) =
+    when (setOf(c1, c2)) {
+        setOf(RED, YELLOW) -> ORANGE
+        setOf(YELLOW, BLUE) -> GREEN
+        setOf(BLUE, VIOLET) -> INDIGO
+        else -> throw Exception("Dirty color")
+    }
+```
+- 인자로 전달 받은 여러 객체를 그 객체들을 포함하는 집합인 `Set`객체로 만드는 `setOf`라는 함수가 있다.
+- 집합(set)은 원소가 모여있는 컬렉션으로 각 원소의 순서는 중요하지 않다.
+- when은 문이 아닌 식이기 때문에 `=`를 통해 분기 조건에 식을 넣을 수 있게 된다.
 
+### 인자 없는 when 사용
+- 위에서 사용한 예시는 비효율적, set 인스턴스를 여러개 생성하기 때문에
+```kotlin
+fun mixOptimized(c1: Color, c2:Color) =
+  when {
+    (c1 == RED && c2 == YELLOW) || (c1 == YELLOW && c2 == RED)
+    -> ORANGE
+    else -> throw Exception("Dirty color")
+  }
+```
+- 대안으로 이렇게 사용할 수 있다.
+- 하지만 이 방법 역시 별로다, 추가 객체를 만들지 않지만, 가독성이 떨어진다.
+- 스마트 캐스트를 활용하면 좋다.
 
+### 스마트 캐스트 : 타입 검사와 타입 캐스트를 조합
+- (1+2) + 4 와 같은 간단한 산술식을 계산하는 함수를 만든다.
+- 식을 인코딩 해야 하는데 트리 구조로 저장한다.
+```kotlin
+fun eval(e: Expr): Int {
+    if (e is Num) {
+        val n = e as Num
+        return n.value
+    }
+
+    if (e is Sum) {
+        return eval(e.right) + eval(e.left)
+    }
+
+    throw java.lang.IllegalArgumentException("Unknown expression")
+}
+```
+- 코틀린에서는 is를 사용해 변수를 검사한다. 자바의 instanceof와 비슷하다.
+- 자바는 어떤 변수의 타입을 instanceof로 확인하고 그 타입에 속한 멤버에 접근하기 위해 명시적으로 변수 타입을 캐스팅해야 한다.
+- 코틀린은 컴파일러가 캐스팅을 해준다. is로 타입을 검사하고 나면 굳이 변수를 원하는 타입으로 캐스팅하지 않아도 컴파일러가 캐스팅을 수행한다. 
+- 이것을 스마트 캐스트,smart cast라고 한다.
+- 위에서는 eval 함수에서 e의 타입이 Num인지 Sum인지 검사한다. 
+- 스마트 캐스팅을 한 부분은 배경색을 바꿔서 표현해줘서 변환이 자동으로 이루어진 것을 확인할 수 있다. 
+- 단, 스마트 캐스트는 is로 변수의 든 값의 타입을 검사한 다음 그 값이 바뀔 수 없는 경우에만 작동한다. 즉, 프로퍼티가 반드시 val이어야 하고 커스텀 접근자를 사용한 것도 안 된다.
+- 만약, 원하는 타입으로 명시적으로 타입 캐스팅을 원하면 `as` 키워드를 사용해야 한다. `val n = e as Num`이런 식으로 말이다.
+
+### 리팩토링 : if를 when으로 변경
+```kotlin
+fun eval(e: Expr): Int =
+    if (e is Num) {
+        e.value
+    } else if (e is Sum) {
+        eval(e.right) + eval(e.left)
+    } else {
+        throw java.lang.IllegalArgumentException("Unknown expression")
+    }
+```
+- if를 사용하면 코드를 더 줄일 수 있다.
+- if가 값을 만들기 때문에 따로 3항 연산자 같은 게 없다. 
+- 특성을 통해 중괄호를 없애고 if식을 본문으로 활용 가능하다.
+
+### if 중첩 대신 when 사용
+```kotlin
+fun eval(e: Expr): Int =
+    when (e) {
+        is Num -> e.value
+        is Sum -> eval(e.right) + eval(e.left)
+        else -> throw java.lang.IllegalArgumentException("Unknown expression")
+    }
+```
+- if와 마찬가지로 타입을 검사하며 스마트 캐스트가 이루어진다.
+
+### if와 when의 분기에서 블록 사용 
+```kotlin
+fun evalWithLogging(e: Expr) : Int =
+    when (e) {
+
+        is Num -> {
+            println("num: ${e.value}")
+            e.value
+        }
+
+        is Sum -> {
+            val left = evalWithLogging(e.left)
+            val right = evalWithLogging(e.right)
+            println("sum: $left + $right")
+            left + right
+        }
+
+        else -> throw java.lang.IllegalArgumentException("Unknown expression")
+    }
+```
+- 블록의 마지막 식이 블록의 결과는 블록이 값을 만들어야 하는 경우 항상 성립
+- 식이 본문인 함수는 블록을 본문으로 가질 수 없고, 블록이 본문인 함수는 내부에 return문이 반드시 있어야 한다. 

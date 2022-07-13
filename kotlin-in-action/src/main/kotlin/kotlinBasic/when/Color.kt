@@ -1,4 +1,4 @@
-package kotlinBasic
+package kotlinBasic.`when`
 
 enum class Color(val r: Int, val g: Int, val b: Int) {
 
@@ -8,5 +8,7 @@ enum class Color(val r: Int, val g: Int, val b: Int) {
     VIOLET(238, 130, 238);
 
     fun rgb() = (r * 256 + g) * 256 + b
+
+
 }
 
